@@ -80,7 +80,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="HardwareMonitor.cs" />
-    <Compile Include="$(SolutionDir)\rainmeter-plugin-sdk\API\RainmeterAPI.cs" />
+    <Compile Include="..\rainmeter-plugin-sdk\API\RainmeterAPI.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -91,6 +91,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\rainmeter-plugin-sdk\API\DllExporter.exe" "$(ConfigurationName)" "$(PlatformName)" "$(TargetDir)\" "$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>"$(ProjectDir)..\rainmeter-plugin-sdk\API\DllExporter.exe" "$(ConfigurationName)" "$(PlatformName)" "$(TargetDir)\" "$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
