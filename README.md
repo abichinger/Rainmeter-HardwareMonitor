@@ -1,37 +1,67 @@
-HardwareMonitor
+Rainmeter OpenHardwareMonitor Plugin
 ===============
 
-HardwareMonitor is a plugin for Rainmeter and uses the OpenHardwareMonitorLibary to monitor sensors of your computer. 
+This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwareMonitor](http://openhardwaremonitor.org). The data is fetched from WMI.
 
-Features :
+## Requirements
 
-- Temperatures
-- Loads
-- Clocks
-- Fanspeed
-- Memory Usage
-- ...
+- [OpenHardwareMonitor](http://openhardwaremonitor.org) is running
 
-Install :
+## Install
 
-1. Download Open Hardware Monitor: http://openhardwaremonitor.org/downloads/
-2. then copy the file OpenHardwareMonitorLib.dll into your Rainmeter folder next to Rainmeter.exe
-3. Compile the HardwareMonitor.dll yourself or use the .dll file inside the x64/x32 folder.
-4. copy the HardwareMonitor.dll into the Plugins folder.
-5. you need to run Rainmeter as admin otherwise the Open Hardware Monitor Libary won't work.
+copy OpenHardwareMonitor.dll into the Rainmeter Plugin folder %appdata%\\Rainmeter\\Plugins  
 
-Example:
->[CPUTemp]  
+## Measure
+
+### Usage:
+
+```ini
+[Measure]  
 Measure=Plugin  
-Plugin=HardwareMonitor.dll  
-Type=cpu temp "CPU Package"
+Plugin=OpenHardwareMonitor.dll  
+HardwareType=Mainboard | SuperIO | CPU | GpuNvidia | GpuAti | TBalancer | Heatmaster | HDD
+HardwareName=HardwareName
+HardwareIndex=HardwareIndex
+SensorType=Voltage | Clock | Temperature | Load | Fan | Flow | Control | Level
+SensorName=SensorName
+SensorIndex=SensorIndex
+```
+
+### Supported parameters
+
+| Parameter | Description | Default |
+| --- | --- | --- |
+| [HardwareType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of hardware | empty string |
+| HardwareName | name of hardware | empty string |
+| HardwareIndex | index of hardware, if multiple devices match the supplied hardware filter | 0 |
+| [SensorType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of sensor | empty string |
+| SensorName | name of sensor | empty string |
+| SensorIndex | index of hardware, if multiple devices match the supplied filter | 0 |
+
+each parameter is **optional**
+
+### Examples ###
+
+![Open Hardware Monitor GPU](assets/gpu_core_load.png)
+
+The following examples show how to measure the GPU Core Load 
+
+```ini
+[GPUCoreLoad]  
+Measure=Plugin  
+Plugin=OpenHardwareMonitor.dll  
+HardwareType=GpuAti
+SensorType=Load
+SensorName=GPU Core
 MinValue=0  
 MaxValue=100  
 
-Allowed Types :
-
-Type = hardware "hardwarename" sensor "sensorname"
-
-- hardware: cpu, gpu, hdd, ram and mainboard
-- sensor: temp, load, clock, fan, power, control, data and voltage
-- hardwarename and sensorname (optional): names are diplayed in OpenHardwareMonitor
+[GPUCoreLoadAlternative]  
+Measure=Plugin  
+Plugin=OpenHardwareMonitor.dll  
+HardwareName=AMD Radeon RX 5700 XT
+SensorType=Load
+SensorName=GPU Core
+MinValue=0  
+MaxValue=100  
+```
