@@ -66,3 +66,5 @@ SensorName=GPU Core
 MinValue=0  
 MaxValue=100  
 ```
+
+More examples can be found inside the skin files [cpu.ini](Skins/CPU/cpu.ini) and [gpu.ini](Skins/GPU/gpu.ini).
