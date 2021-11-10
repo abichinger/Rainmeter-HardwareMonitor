@@ -9,7 +9,8 @@ This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwar
 
 ## Install
 
-copy OpenHardwareMonitor.dll into the Rainmeter Plugin folder %appdata%\\Rainmeter\\Plugins  
+1. Download the latest [Release](https://github.com/abichinger/Rainmeter-HardwareMonitor/releases)
+2. Install the .rmskin file
 
 ## Measure
 
