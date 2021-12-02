@@ -1,11 +1,11 @@
 Rainmeter OpenHardwareMonitor Plugin
 ===============
 
-This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwareMonitor](http://openhardwaremonitor.org). The data is fetched from WMI.
+This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwareMonitor](http://openhardwaremonitor.org)/[LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor). The data is fetched from WMI.
 
 ## Requirements
 
-- [OpenHardwareMonitor](http://openhardwaremonitor.org) is running
+- [OpenHardwareMonitor](http://openhardwaremonitor.org) or [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) is running
 
 ## Install
 
@@ -32,12 +32,13 @@ SensorIndex=SensorIndex
 
 | Parameter | Description | Default |
 | --- | --- | --- |
+| Namespace | WMI namespace | `OpenHardwareMonitor` |
 | [HardwareType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of hardware | empty string |
 | HardwareName | name of hardware | empty string |
-| HardwareIndex | index of hardware, if multiple devices match the supplied hardware filter | 0 |
+| HardwareIndex | index of hardware, if multiple devices match the supplied hardware filter | `0` |
 | [SensorType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of sensor | empty string |
 | SensorName | name of sensor | empty string |
-| SensorIndex | index of hardware, if multiple devices match the supplied filter | 0 |
+| SensorIndex | index of hardware, if multiple devices match the supplied filter | `0` |
 
 each parameter is **optional**
 
@@ -50,7 +51,8 @@ The following examples show how to measure the GPU Core Load
 ```ini
 [GPUCoreLoad]  
 Measure=Plugin  
-Plugin=OpenHardwareMonitor.dll  
+Plugin=OpenHardwareMonitor.dll
+;Namespace=LibreHardwareMonitor ;use LibreHardwareMonitor
 HardwareType=GpuAti
 SensorType=Load
 SensorName=GPU Core
@@ -59,7 +61,8 @@ MaxValue=100
 
 [GPUCoreLoadAlternative]  
 Measure=Plugin  
-Plugin=OpenHardwareMonitor.dll  
+Plugin=OpenHardwareMonitor.dll
+;Namespace=LibreHardwareMonitor ;use LibreHardwareMonitor
 HardwareName=AMD Radeon RX 5700 XT
 SensorType=Load
 SensorName=GPU Core
