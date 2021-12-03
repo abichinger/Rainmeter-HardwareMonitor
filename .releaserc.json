@@ -1,0 +1,26 @@
+{
+    "branches": ["master"],
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/github",
+            {
+                "assets": ["*.rmskin"]
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+                "assets": ["RMSKIN.ini", "OpenHardwareMonitor/AssemblyInfo.cs", "package.json", "OpenHardwareMonitor/OpenHardwareMonitor.csproj"]
+            }
+        ],
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "powershell scripts\\prepare_release.ps1 ${nextRelease.version}"
+            }
+        ]
+    ]
+}
