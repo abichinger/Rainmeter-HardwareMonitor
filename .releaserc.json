@@ -1,0 +1,24 @@
+{
+    "branches": ["master"],
+    "plugins": [
+        [
+            "@semantic-release/github",
+            {
+                "assets": ["*.rmskin"]
+            }
+        ],
+        [
+            "@semantic-release/git",
+            {
+                "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
+                "assets": ["RMSKIN.ini", "OpenHardwareMonitor/AssemblyInfo.cs", "package.json"]
+            }
+        ],
+        [
+            "@semantic-release/exec",
+            {
+                "prepareCmd": "scripts\\prepare_release.ps1 ${nextRelease.notes}"
+            }
+        ]
+    ]
+}
