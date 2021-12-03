@@ -73,9 +73,9 @@ namespace RainmeterOHM
         private const string DefaultNamespace = "OpenHardwareMonitor";
         private const string SensorClass = "Sensor";
         private const string HardwareClass = "Hardware";
-        private const string wmi_root = "root";
+        private const string wmiROOT = "root";
         
-        private string sensor_identifier;
+        private string sensorID;
         private string ns;
 
         API api;
@@ -85,7 +85,7 @@ namespace RainmeterOHM
 
         }
 
-        internal void Reload(Rainmeter.API rm, ref double maxValue)
+        internal void Reload(Rainmeter.API rm)
         {
             api = rm;
 
@@ -101,20 +101,7 @@ namespace RainmeterOHM
 
                 api.Log(API.LogType.Debug, String.Format("Hardware(type, name, index): ({0}, {1}, {2}), Sensor(type, name, index): ({3}, {4}, {5})", hwType, hwName, hwIndex, sType, sName, sIndex));
 
-                this.ns = "root\\" + rm.ReadString("Namespace", DefaultNamespace);
-
-                var bFoundNamespace = false;
-                using (var nsClass = new ManagementClass(new ManagementScope(wmi_root), new ManagementPath("__namespace"), null))
-                    using(var moCollection = nsClass.GetInstances())
-                        foreach (var ns in moCollection)
-                            if ((wmi_root + "\\" + ns["Name"].ToString()).ToLowerInvariant() == this.ns.ToLowerInvariant())
-                                bFoundNamespace = true;
-
-                if (!bFoundNamespace)
-                {
-                    api.Log(API.LogType.Error, "Cant find WMI namespace: " + this.ns);
-                    return;
-                }
+                this.ns = wmiROOT + "\\" + rm.ReadString("Namespace", DefaultNamespace);
 
                 WMIQuery hwQuery = new WMIQuery(this.ns, HardwareClass);
                 if (hwType.Length > 0)
@@ -124,21 +111,21 @@ namespace RainmeterOHM
                 
                 api.Log(API.LogType.Debug, "Hardware Query: " + hwQuery.ToString());
 
-                string hardware_identifier;
+                string hardwareID;
                 using (var hardware = hwQuery.GetAt(hwIndex))
                 {
                     if (hardware == null)
                     {
-                        api.Log(API.LogType.Error, "Cant find hardware");
-                        this.sensor_identifier = null;
+                        api.Log(API.LogType.Error, "can't find hardware -> check hardware filter, check if OHM/LHM is running");
+                        this.sensorID = null;
                         return;
                     }
-                    hardware_identifier = (string)hardware.GetPropertyValue("Identifier");
-                    api.Log(API.LogType.Debug, "Hardware Identifier: " + hardware_identifier.ToString());
+                    hardwareID = (string)hardware.GetPropertyValue("Identifier");
+                    api.Log(API.LogType.Debug, "Hardware Identifier: " + hardwareID.ToString());
                 }
 
                 WMIQuery sQuery = new WMIQuery(this.ns, SensorClass);
-                sQuery.Where("Parent", hardware_identifier);
+                sQuery.Where("Parent", hardwareID);
                 if (sType.Length > 0)
                     sQuery.Where("SensorType", sType);
                 if (sName.Length > 0)
@@ -149,17 +136,18 @@ namespace RainmeterOHM
                 {
                     if (sensor == null)
                     {
-                        api.Log(API.LogType.Error, "Cant find sensor");
-                        this.sensor_identifier = null;
+                        api.Log(API.LogType.Error, "can't find sensor -> check sensor filter");
+                        this.sensorID = null;
                         return;
                     }
-                    this.sensor_identifier = sensor.GetPropertyValue("Identifier").ToString();
-                    api.Log(API.LogType.Debug, "Sensor Identifier: " + sensor_identifier.ToString());
+                    this.sensorID = sensor.GetPropertyValue("Identifier").ToString();
+                    api.Log(API.LogType.Debug, "Sensor Identifier: " + sensorID.ToString());
                 }
             }
             catch (Exception ex)
             {
-                api.Log(API.LogType.Error, "Fatal Error: " + ex.ToString());
+                api.Log(API.LogType.Error, "Fatal Error: " + ex.Message);
+                api.Log(API.LogType.Debug, ex.ToString());
             }
         }
 
@@ -167,12 +155,15 @@ namespace RainmeterOHM
         {
             double value = -1;
 
-            if (this.sensor_identifier == null)
+            if (this.sensorID == null)
+                this.Reload(this.api);
+
+            if (this.sensorID == null)
                 return value;
 
             try {
                 WMIQuery wmiQuery = new WMIQuery(this.ns, SensorClass);
-                wmiQuery.Where("Identifier", this.sensor_identifier);
+                wmiQuery.Where("Identifier", this.sensorID);
                 using (var sensor = wmiQuery.GetAt(0))
                     if (sensor != null)
                         value = Double.Parse(sensor.GetPropertyValue("Value").ToString());
@@ -186,20 +177,6 @@ namespace RainmeterOHM
             return value;
         }
 
-        internal string GetString()
-        {
-            /*switch (Type)
-            {
-                case MeasureType.String:
-                    return string.Format("{0}.{1} (Build {2})", Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, Environment.OSVersion.Version.Build);
-            }*/
-
-            // MeasureType.Major, MeasureType.Minor, and MeasureType.Number are
-            // numbers. Therefore, null is returned here for them. This is to
-            // inform Rainmeter that it can treat those types as numbers.
-
-            return null;
-        }
     }
 
 
@@ -233,7 +210,7 @@ namespace RainmeterOHM
         public static void Reload(IntPtr data, IntPtr rm, ref double maxValue)
         {
             Measure measure = (Measure)GCHandle.FromIntPtr(data).Target;
-            measure.Reload(new Rainmeter.API(rm), ref maxValue);
+            measure.Reload(new Rainmeter.API(rm));
         }
 
         [DllExport]
