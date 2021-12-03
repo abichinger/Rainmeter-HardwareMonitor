@@ -19,7 +19,8 @@ This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwar
 ```ini
 [Measure]  
 Measure=Plugin  
-Plugin=OpenHardwareMonitor.dll  
+Plugin=OpenHardwareMonitor.dll
+;Namespace=LibreHardwareMonitor ;use LibreHardwareMonitor
 HardwareType=Mainboard | SuperIO | CPU | GpuNvidia | GpuAti | TBalancer | Heatmaster | HDD
 HardwareName=HardwareName
 HardwareIndex=HardwareIndex
