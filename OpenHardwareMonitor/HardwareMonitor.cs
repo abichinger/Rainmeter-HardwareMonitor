@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Rainmeter;
@@ -9,11 +9,13 @@ namespace RainmeterOHM
 
     class WMIQuery{
 
+        private string ns;
         private string table;
         private List<string> statements;
 
-        internal WMIQuery(string table)
+        internal WMIQuery(string ns, string table)
         {
+            this.ns = ns;
             this.table = table;
             this.statements = new List<string>();
         }
@@ -32,7 +34,31 @@ namespace RainmeterOHM
         {
             this.statements.Add(string.Format("{0}{1}{2}", property, op, value));
         }
-        
+
+        public ManagementObject GetAt(int index)
+        {
+            using (ManagementObjectSearcher mos = new ManagementObjectSearcher(new ManagementScope(this.ns), new ObjectQuery(this.ToString())))
+                using (ManagementObjectCollection moc = mos.Get())
+                {
+                    int i = 0;
+                    foreach (ManagementObject m in moc)
+                    {
+                        try
+                        {
+                            if (index == i)
+                                return m;
+
+                            i++;
+                        }
+                        finally
+                        {
+                            m.Dispose();
+                        }
+                    }
+                    return null;
+                }
+        }
+
         override
         public string ToString()
         {
@@ -42,39 +68,17 @@ namespace RainmeterOHM
 
     }
 
-    public enum HardwareType
-    {
-        Mainboard,
-        SuperIO,
-        CPU,
-        GpuNvidia,
-        GpuAti,
-        TBalancer,
-        Heatmaster,
-        HDD,
-    }
-
-    public enum SensorType
-    {
-        Voltage,
-        Clock,
-        Temperature,
-        Load,
-        Fan,
-        Flow,
-        Control,
-        Level
-    }
-
     public class Measure
     {
-        private const string OpenHardwareMonitorNamespace = "root\\OpenHardwareMonitor";
+        private const string DefaultNamespace = "OpenHardwareMonitor";
         private const string SensorClass = "Sensor";
         private const string HardwareClass = "Hardware";
-        
-
+        private const string wmi_root = "root";
         
         private string sensor_identifier;
+        private string ns;
+
+        API api;
 
         internal Measure()
         {
@@ -83,99 +87,103 @@ namespace RainmeterOHM
 
         internal void Reload(Rainmeter.API rm, ref double maxValue)
         {
-            Rainmeter.API api = (Rainmeter.API)rm;
+            api = rm;
 
-            string hwType = rm.ReadString("HardwareType", "");
-            string hwName = rm.ReadString("HardwareName", "");
-            int hwIndex = rm.ReadInt("HardwareIndex", 0);
-
-            string sType = rm.ReadString("SensorType", "");
-            string sName = rm.ReadString("SensorName", "");
-            int sIndex = rm.ReadInt("SensorIndex", 0);
-
-            api.Log(API.LogType.Debug, String.Format("Hardware(type, name, index): ({0}, {1}, {2}), Sensor(type, name, index): ({3}, {4}, {5})", hwType, hwName, hwIndex, sType, sName, sIndex));
-
-            ManagementScope scope = new ManagementScope(OpenHardwareMonitorNamespace);
-            scope.Connect();
-
-            WMIQuery hwQuery = new WMIQuery(HardwareClass);
-            if(hwType.Length > 0)
+            try
             {
-                hwQuery.Where("HardwareType", hwType);
-            }
-            if (hwName.Length > 0)
-            {
-                hwQuery.Where("name", hwName);
-            }
-            string hwQueryStr = hwQuery.ToString();
-            api.Log(API.LogType.Debug, "Hardware Query: "+hwQueryStr);
-            ManagementObjectSearcher hwSearcher = new ManagementObjectSearcher(scope, new ObjectQuery(hwQueryStr));
-            ManagementObject hardware = getObjectAt(hwSearcher.Get(), hwIndex);
+                string hwType = rm.ReadString("HardwareType", "");
+                string hwName = rm.ReadString("HardwareName", "");
+                int hwIndex = rm.ReadInt("HardwareIndex", 0);
 
-            if(hardware == null)
-            {
-                api.Log(API.LogType.Warning, "Hardware not found");
-                this.sensor_identifier = null;
-                return;
-            }
+                string sType = rm.ReadString("SensorType", "");
+                string sName = rm.ReadString("SensorName", "");
+                int sIndex = rm.ReadInt("SensorIndex", 0);
 
-            string hardware_identifier = (string) hardware.GetPropertyValue("Identifier");
+                api.Log(API.LogType.Debug, String.Format("Hardware(type, name, index): ({0}, {1}, {2}), Sensor(type, name, index): ({3}, {4}, {5})", hwType, hwName, hwIndex, sType, sName, sIndex));
 
-            WMIQuery sQuery = new WMIQuery(SensorClass);
-            sQuery.Where("Parent", hardware_identifier);
-            if (sType.Length > 0)
-            {
-                sQuery.Where("SensorType", sType);
-            }
-            if (sName.Length > 0)
-            {
-                sQuery.Where("name", sName);
-            }
-            string sQueryStr = sQuery.ToString();
-            api.Log(API.LogType.Debug, "Sensor Query: " + sQueryStr);
-            ManagementObjectSearcher sSearcher = new ManagementObjectSearcher(scope, new ObjectQuery(sQueryStr));
-            ManagementObject sensor = getObjectAt(sSearcher.Get(), sIndex);
+                this.ns = "root\\" + rm.ReadString("Namespace", DefaultNamespace);
 
-            if (sensor == null)
-            {
-                api.Log(API.LogType.Warning, "Sensor not found");
-                this.sensor_identifier = null;
-                return;
-            }
-            this.sensor_identifier = sensor.GetPropertyValue("Identifier").ToString();
+                var bFoundNamespace = false;
+                using (var nsClass = new ManagementClass(new ManagementScope(wmi_root), new ManagementPath("__namespace"), null))
+                    using(var moCollection = nsClass.GetInstances())
+                        foreach (var ns in moCollection)
+                            if ((wmi_root + "\\" + ns["Name"].ToString()).ToLowerInvariant() == this.ns.ToLowerInvariant())
+                                bFoundNamespace = true;
 
-        }
-
-        internal ManagementObject getObjectAt(ManagementObjectCollection moc, int index)
-        {
-            int i = 0;
-            foreach (ManagementObject m in moc)
-            {
-                if (index == i)
+                if (!bFoundNamespace)
                 {
-                    return m;
+                    api.Log(API.LogType.Error, "Cant find WMI namespace: " + this.ns);
+                    return;
                 }
-                i++;
+
+                WMIQuery hwQuery = new WMIQuery(this.ns, HardwareClass);
+                if (hwType.Length > 0)
+                    hwQuery.Where("HardwareType", hwType);
+                if (hwName.Length > 0)
+                    hwQuery.Where("name", hwName);
+                
+                api.Log(API.LogType.Debug, "Hardware Query: " + hwQuery.ToString());
+
+                string hardware_identifier;
+                using (var hardware = hwQuery.GetAt(hwIndex))
+                {
+                    if (hardware == null)
+                    {
+                        api.Log(API.LogType.Error, "Cant find hardware");
+                        this.sensor_identifier = null;
+                        return;
+                    }
+                    hardware_identifier = (string)hardware.GetPropertyValue("Identifier");
+                    api.Log(API.LogType.Debug, "Hardware Identifier: " + hardware_identifier.ToString());
+                }
+
+                WMIQuery sQuery = new WMIQuery(this.ns, SensorClass);
+                sQuery.Where("Parent", hardware_identifier);
+                if (sType.Length > 0)
+                    sQuery.Where("SensorType", sType);
+                if (sName.Length > 0)
+                    sQuery.Where("name", sName);
+
+                api.Log(API.LogType.Debug, "Sensor Query: " + sQuery.ToString());
+                using (var sensor = sQuery.GetAt(sIndex))
+                {
+                    if (sensor == null)
+                    {
+                        api.Log(API.LogType.Error, "Cant find sensor");
+                        this.sensor_identifier = null;
+                        return;
+                    }
+                    this.sensor_identifier = sensor.GetPropertyValue("Identifier").ToString();
+                    api.Log(API.LogType.Debug, "Sensor Identifier: " + sensor_identifier.ToString());
+                }
             }
-            return null;
+            catch (Exception ex)
+            {
+                api.Log(API.LogType.Error, "Fatal Error: " + ex.ToString());
+            }
         }
 
         internal double Update()
         {
-            ManagementScope scope = new ManagementScope(OpenHardwareMonitorNamespace);
-            scope.Connect();
+            double value = -1;
 
-            WMIQuery wmiQuery = new WMIQuery(SensorClass);
-            wmiQuery.Where("Identifier", this.sensor_identifier);
-            ObjectQuery query = new ObjectQuery(wmiQuery.ToString());
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query);
+            if (this.sensor_identifier == null)
+                return value;
 
-            foreach (ManagementObject sensor in searcher.Get())
+            try {
+                WMIQuery wmiQuery = new WMIQuery(this.ns, SensorClass);
+                wmiQuery.Where("Identifier", this.sensor_identifier);
+                using (var sensor = wmiQuery.GetAt(0))
+                    if (sensor != null)
+                        value = Double.Parse(sensor.GetPropertyValue("Value").ToString());
+                       
+            }
+            catch (Exception ex)
             {
-                return Double.Parse(sensor.GetPropertyValue("Value").ToString());
+                api.Log(API.LogType.Error, "Fatal Error: " + ex.ToString());
             }
 
-            return -1;
+            return value;
         }
 
         internal string GetString()
