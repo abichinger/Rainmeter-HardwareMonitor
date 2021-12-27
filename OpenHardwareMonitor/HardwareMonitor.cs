@@ -22,6 +22,7 @@ namespace RainmeterOHM
 
         public void Where(string property, string value)
         {
+            value = value.Replace(@"\", @"\\").Replace(@"'", @"\'");
             this.Where(property, string.Format("'{0}'", value), "=");
         }
 
