@@ -21,10 +21,10 @@ This Plugin allowes Rainmeter measures to access the sensor data of [OpenHardwar
 Measure=Plugin  
 Plugin=OpenHardwareMonitor.dll
 ;Namespace=LibreHardwareMonitor ;use LibreHardwareMonitor
-HardwareType=Mainboard | SuperIO | CPU | GpuNvidia | GpuAti | TBalancer | Heatmaster | HDD
+HardwareType=Mainboard | SuperIO | CPU | GpuNvidia | GpuAti | TBalancer | Heatmaster | HDD | ...
 HardwareName=HardwareName
 HardwareIndex=HardwareIndex
-SensorType=Voltage | Clock | Temperature | Load | Fan | Flow | Control | Level
+SensorType=Voltage | Clock | Temperature | Load | Fan | Flow | Control | Level | ...
 SensorName=SensorName
 SensorIndex=SensorIndex
 ```
@@ -34,10 +34,10 @@ SensorIndex=SensorIndex
 | Parameter | Description | Default |
 | --- | --- | --- |
 | Namespace | WMI namespace | `OpenHardwareMonitor` |
-| [HardwareType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of hardware | empty string |
+| HardwareType | type of hardware (types: [OHM](https://github.com/openhardwaremonitor/openhardwaremonitor/blob/master/Hardware/IHardware.cs)/[LHM](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LibreHardwareMonitorLib/Hardware/HardwareType.cs)) | empty string |
 | HardwareName | name of hardware | empty string |
 | HardwareIndex | index of hardware, if multiple devices match the supplied hardware filter | `0` |
-| [SensorType](http://openhardwaremonitor.org/wordpress/wp-content/uploads/2011/04/OpenHardwareMonitor-WMI.pdf) | type of sensor | empty string |
+| SensorType | type of sensor (types: [OHM](https://github.com/openhardwaremonitor/openhardwaremonitor/blob/master/Hardware/ISensor.cs)/[LHM](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LibreHardwareMonitorLib/Hardware/ISensor.cs)) | empty string |
 | SensorName | name of sensor | empty string |
 | SensorIndex | index of hardware, if multiple devices match the supplied filter | `0` |
 
