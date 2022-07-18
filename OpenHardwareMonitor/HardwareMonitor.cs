@@ -78,6 +78,7 @@ namespace RainmeterOHM
         
         private string sensorID;
         private string ns;
+        private string sensorValueName;
 
         API api;
 
@@ -99,6 +100,8 @@ namespace RainmeterOHM
                 string sType = rm.ReadString("SensorType", "");
                 string sName = rm.ReadString("SensorName", "");
                 int sIndex = rm.ReadInt("SensorIndex", 0);
+
+                this.sensorValueName = rm.ReadString("SensorValueName", "Value");
 
                 api.Log(API.LogType.Debug, String.Format("Hardware(type, name, index): ({0}, {1}, {2}), Sensor(type, name, index): ({3}, {4}, {5})", hwType, hwName, hwIndex, sType, sName, sIndex));
 
@@ -141,6 +144,18 @@ namespace RainmeterOHM
                         this.sensorID = null;
                         return;
                     }
+
+                    bool propertyFound = false;
+                    foreach(PropertyData prop in sensor.Properties){
+                        if (prop.Name == this.sensorValueName) {
+                            propertyFound = true;
+                        }
+                    }
+                    if (propertyFound == false) {
+                        api.Log(API.LogType.Error, "sensor has no value named: " + this.sensorValueName);
+                        return;
+                    }
+
                     this.sensorID = sensor.GetPropertyValue("Identifier").ToString();
                     api.Log(API.LogType.Debug, "Sensor Identifier: " + sensorID.ToString());
                 }
@@ -167,12 +182,12 @@ namespace RainmeterOHM
                 wmiQuery.Where("Identifier", this.sensorID);
                 using (var sensor = wmiQuery.GetAt(0))
                     if (sensor != null)
-                        value = Double.Parse(sensor.GetPropertyValue("Value").ToString());
-                       
+                        value = Double.Parse(sensor.GetPropertyValue(this.sensorValueName).ToString());
             }
             catch (Exception ex)
             {
-                api.Log(API.LogType.Error, "Fatal Error: " + ex.ToString());
+                api.Log(API.LogType.Error, "Fatal Error: " + ex.Message);
+                api.Log(API.LogType.Debug, ex.ToString());
             }
 
             return value;

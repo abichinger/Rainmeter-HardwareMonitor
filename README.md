@@ -39,7 +39,8 @@ SensorIndex=SensorIndex
 | HardwareIndex | index of hardware, if multiple devices match the supplied hardware filter | `0` |
 | SensorType | type of sensor (types: [OHM](https://github.com/openhardwaremonitor/openhardwaremonitor/blob/master/Hardware/ISensor.cs)/[LHM](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LibreHardwareMonitorLib/Hardware/ISensor.cs)) | empty string |
 | SensorName | name of sensor | empty string |
-| SensorIndex | index of sensor, if multiple devices match the supplied filter | `0` |
+| SensorIndex | index of sensor, if multiple sensors match the supplied filter | `0` |
+| SensorValueName | Specifies which value to read from the sensor. Options:<br />`Value` - Last read value<br />`Min` - Lowest read value <br />`Max` - Highest read value | `Value` |
 
 each parameter is **optional**
 
@@ -58,7 +59,7 @@ HardwareType=GpuAti
 SensorType=Load
 SensorName=GPU Core
 MinValue=0  
-MaxValue=100  
+MaxValue=100
 
 [GPUCoreLoadAlternative]  
 Measure=Plugin  
@@ -84,6 +85,36 @@ Plugin=OpenHardwareMonitor
 ;Namespace=LibreHardwareMonitor ;uncomment to use LibreHardwareMonitor
 HardwareName=Nuvoton NCT6797D
 SensorName=Fan #5
+```
+
+### Measure min/max values
+
+```ini
+[CPUPackageTemp]
+Measure=Plugin
+Plugin=OpenHardwareMonitor
+;Namespace=LibreHardwareMonitor ;uncomment to use LibreHardwareMonitor
+HardwareName=AMD Ryzen 5 3600
+SensorName=CPU Package
+SensorType=Temperature
+
+[CPUPackageTempMax]
+Measure=Plugin
+Plugin=OpenHardwareMonitor
+;Namespace=LibreHardwareMonitor ;uncomment to use LibreHardwareMonitor
+HardwareName=AMD Ryzen 5 3600
+SensorName=CPU Package
+SensorType=Temperature
+SensorValueName=Max
+
+[CPUPackageTempMin]
+Measure=Plugin
+Plugin=OpenHardwareMonitor
+;Namespace=LibreHardwareMonitor ;uncomment to use LibreHardwareMonitor
+HardwareName=AMD Ryzen 5 3600
+SensorName=CPU Package
+SensorType=Temperature
+SensorValueName=Min
 ```
 
 More examples can be found inside the skin files [cpu.ini](Skins/CPU/cpu.ini) and [gpu.ini](Skins/GPU/gpu.ini).
