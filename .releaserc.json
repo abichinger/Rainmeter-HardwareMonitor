@@ -1,5 +1,5 @@
 {
-    "branches": ["master"],
+    "branches": ["main"],
     "plugins": [
         "@semantic-release/commit-analyzer",
         "@semantic-release/release-notes-generator",
@@ -19,7 +19,7 @@
             "@semantic-release/git",
             {
                 "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
-                "assets": ["RMSKIN.ini", "OpenHardwareMonitor/AssemblyInfo.cs", "package.json", "OpenHardwareMonitor/OpenHardwareMonitor.csproj"]
+                "assets": ["RMSKIN.ini", "LibreMeter/AssemblyInfo.cs", "package.json", "LibreMeter/LibreMeter.csproj"]
             }
         ]
     ]

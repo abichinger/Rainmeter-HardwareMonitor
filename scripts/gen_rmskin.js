@@ -31,8 +31,8 @@ rmskinOutput.on('close', function() {
 rmskin.pipe(rmskinOutput)
 
 rmskin.file('./RMSKIN.ini', {name: 'RMSKIN.ini'})
-rmskin.directory('./Skins/', 'Skins/OHM')
-rmskin.file('build/x32/Release/OpenHardwareMonitor.dll', {name: 'Plugins/32bit/OpenHardwareMonitor.dll'})
-rmskin.file('build/x64/Release/OpenHardwareMonitor.dll', {name: 'Plugins/64bit/OpenHardwareMonitor.dll'})
+rmskin.directory('./Skins/', 'Skins/LibreMeter')
+rmskin.file('build/x32/Release/LibreMeter.dll', {name: 'Plugins/32bit/LibreMeter.dll'})
+rmskin.file('build/x64/Release/LibreMeter.dll', {name: 'Plugins/64bit/LibreMeter.dll'})
 
 rmskin.finalize()
